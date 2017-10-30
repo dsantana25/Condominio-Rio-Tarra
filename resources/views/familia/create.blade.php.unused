@@ -1,0 +1,66 @@
+  <div class="container px-4 py-2">
+    <div class="row">
+      <div class="col-md-12 ml-md-auto">
+        @include('errors')
+        <h1 class="title mb-5">Nueva familia</h1>
+
+        <div class="row">
+          <div class="col-xl-3 mr-3 py-3" style="border: solid 1px rgb(238,238,238)">
+            <h3 class="title text-center mb-3">Nuevo miembro</h3>
+            <form v-on:submit.prevent="submitForm">
+              @include('layouts.family-member')
+              <button :disabled="!isOwnerFormValid()" type="submit" class="btn btn-primary btn-block" style="cursor:pointer">Agregar</button>
+            </form>
+          </div>
+          <div class="col py-3" style="border: solid 1px rgb(238,238,238)">
+            <h3 class="title text-center mb-3">Miembros agregados</h3>
+            <template v-if="formSubmitted">
+              <table class="table">
+                <thead>
+                  <th>Nombre</th>
+                  <th>Fecha de nacimiento</th>
+                  <th>Cédula de identidad</th>
+                  <th>Teléfono fijo</th>
+                  <th>Teléfono móvil</th>
+                  <th>Repr.</th>
+                </thead>
+                <tbody>
+                  <tr v-for="member in members">
+                    <td>@{{member.first_name}} @{{member.last_name}}</td>
+                    <td v-text="member.birth_date"></td>
+                    <td v-text="member.identity"></td>
+                    <td v-text="member.phone"></td>
+                    <td v-text="member.cellphone"></td>
+                    <td v-if="member.main">Si</td>
+                    <td v-else>No</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="row">
+                <div class="col-12">
+                  <div class="form-group">
+                    <label class="my-label" for="apartamento">Apartamento:</label>
+                    <select v-model="apartment" type="text" name="apartment" class="form-cotrol contact-name">
+                      @foreach ($apartments as $apartment)
+                        <option value="{{$apartment->id}}">{{$apartment->name}}</option>
+                      @endforeach
+                    </select>
+                  </div>
+                </div>
+                <div class="col ml-auto text-center">
+                  <form @submit.prevent="guardarFamilia">
+                    <button :disabled="!isFamilyFormValid()" type="submit" class="btn btn-primary btn-block" name="button">
+                      Guardar familia
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </template>
+
+            <h5 class="text-center col" v-else>Aqui van los miembros que agregues</h5>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>

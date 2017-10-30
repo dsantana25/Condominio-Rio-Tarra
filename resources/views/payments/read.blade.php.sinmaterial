@@ -1,0 +1,307 @@
+@extends('layouts.app')
+
+@section('content')
+  <div class="container px-4 py-2">
+    <div class="row">
+      <div class="col-md-3 mr-md-2">{{-- Columna 1 --}}
+        <transition :duration="{ enter: 1000, leave: 1 }" name="custom-classes-transition" enter-active-class="animated fadeInLeft" leave-active-class="animated fadeInLeft">
+          <template v-if="!toggle.newPayment">
+            <div class="bg-light rounded my-card">
+              <div class="px-4 py-2 rounded-top align-middle bg-primary text-light">
+                <h4 class="title">Menú</h4>
+              </div>
+              <div class="list-group">
+                <a href="#" @click="toggle.newPayment = true" class="list-group-item list-group-item-action">Nuevo pago</a>
+              </div>
+            </div>
+          </template>
+        </transition>
+
+        <transition :duration="{ enter: 1000, leave: 1 }" name="custom-classes-transition" enter-active-class="animated fadeInLeft" leave-active-class="animated fadeInLeft">
+          <template v-if="toggle.newPayment">
+            <div class="col-12">
+              <div class="py-4 bg-light rounded my-card">
+                <div class="px-4">
+                  <h4 class="title text-center">Nuevo pago</h4>
+                </div>
+                <hr>
+                <div class="row px-4">
+                  <div class="col-12">
+                    <div class="form-group">
+                      <label class="my-label" for="apartment">Apartamento:</label>
+                      <select v-model="toPayApartment" class="form-control" name="apartment">
+                        <option v-for="apartment in apartments" value="@{{apartment.id}}">@{{apartment.name}}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="form-group">
+                      <label class="my-label">Meses a pagar:</label>
+                      <div class="input-group">
+                        <span class="input-group-btn">
+                          <button @click="substractMonth" class="btn btn-light" type="button"><i class="material-icons" style="font-size:12px">remove</i></button>
+                        </span>
+                        <input v-model="payment.months.value" type="text" class="form-control text-center">
+                        <span class="input-group-btn">
+                          <button @click="addMonth" class="btn btn-light" type="button"><i class="material-icons" style="font-size:12px">add</i></button>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="form-group">
+                      <label class="my-label">Método de pago:</label>
+                      <select @change="updatePaymentMethod()" class="form-control" v-model="payment.paymentType" name="">
+                        <option value="1" selected>Efectivo</option>
+                        <option value="2">Depósito</option>
+                        <option value="3">Transferencia</option>
+                        <option value="4">Cheque</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <template v-if="payment.paymentType == 2">
+                      <div class="row">
+                        <div class="col-12">
+                          <div class="form-group">
+                            <label class="my-label">Numero de depósito:</label>
+                            <input type="text" class="form-control" name="" v-model="payment.bankNumber">
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <label class="my-label">Banco de origen:</label>
+                          <select v-model="payment.originBank" class="form-control" name="">
+                            <option value="1">Banco Provincial</option>
+                          </select>
+                        </div>
+                      </div>
+                    </template>
+                    <template v-if="payment.paymentType == 3">
+                      <div class="row">
+                        <div class="col-12">
+                          <div class="form-group">
+                            <label class="my-label">Numero de transferencia:</label>
+                            <input type="text" class="form-control" name="" v-model="payment.bankNumber">
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <label class="my-label">Banco de origen:</label>
+                          <select v-model="payment.originBank" class="form-control" name="">
+                            <option value="1">Banco Provincial</option>
+                          </select>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                  <div class="col-12 mt-4">
+                    <button @click="savePayment" type="button" class="btn btn-primary btn-block" name="button">Registrar pago</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </transition>
+      </div>{{-- Fin de Columna 1 --}}
+
+
+
+
+
+
+      <div class="col ml-md-2 ml-md-auto">{{-- Columna 2 --}}
+        @include('errors')
+        <transition :duration="{ enter: 1000, leave: 1 }" name="custom-classes-transition" enter-active-class="animated fadeInLeft" leave-active-class="animated fadeInLeft">
+          <template v-if="!toggle.newPayment">
+            <div class="card my-card">
+              <div class="card-header bg-primary">
+                Pagos de condominio
+              </div>
+              <div class="card-body">
+
+              </div>
+            </div>
+            <div class="bg-light rounded ">
+              <div class="px-4 py-2 rounded-top align-middle bg-primary text-light">
+                <h4 class="title">Pagos de condominio</h4>
+              </div>
+              <hr>
+              <ul class="list-group">
+                @foreach($apartments as $apartment)
+                  <li class="list-group-item" style="border-bottom: 1px solid rgba(0, 0, 0, 0.125);background: transparent;">
+                    <div class="row">
+                      <div class="col">
+                        <span style="display: block;font-size: 10px;font-weight: 800;">Apartamento:</span>
+                        <span style="font-weight: 600;font-size: 18px;">{{$apartment->name}}</span>
+
+                      </div>
+                      <div class="col">
+                        <span style="display: block;font-size: 10px;font-weight: 800;">Ultimo pago:</span>
+                        <span style="font-weight: 600;font-size: 18px;">Marzo 2017</span>
+                      </div>
+
+                      <div class="col-auto">
+                        <span style="display: block;font-size: 10px;font-weight: 800;">Opciones:</span>
+                        <a href="#" @click="getPaymentsData({{$apartment->id}})" data-toggle="modal" data-target="#exampleModal"><i class="material-icons">info</i></a>
+                      </div>
+                    </div>
+                  </li>
+                @endforeach
+                <div class="row mt-3">
+                  <div class="col-6 mx-auto">
+                    {{$apartments->links()}}
+                  </div>
+                </div>
+              </div>
+            </ul>
+          </template>
+        </transition>
+
+        <transition :duration="{ enter: 1000, leave: 1 }" name="custom-classes-transition" enter-active-class="animated fadeInLeft" leave-active-class="animated fadeInLeft">
+          <template v-if="toggle.newPayment">
+            <div class="col-12">
+              <div class="bg-light rounded p-4 my-card">
+                <div style="">{{-- Recibo --}}
+                  <div class="row p-4 justify-content-around">
+                    <div class="col-4">
+                      <img class="img-fluid" src="{{asset('images/logo.png')}}" alt="">
+                    </div>
+                    <div class="col">
+                      <h4 class="title" style="text-align:right;font-weight:600 !important">Recibo de pago</h4>
+                    </div>
+                  </div>
+                    <div class="col-12 px-4 py-2 text-dark" style="background:#e9ecef">
+                      <div class="row">
+                        <div class="col-12">
+                          Conjunto Residencial Lago Azul - Edificio Río Tarra <br>
+                          RIF: J-1111111111
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="row justify-content-between">
+                        <div class="col">
+                          <ul class="list-group">
+                            <li class="list-group-item bg-light pl-0"><strong>Apartamento:</strong> <span>7-A</span></li>
+                            <li class="list-group-item bg-light pl-0"><strong>Propietario:</strong> <span>Eduardo Santana</span></li>
+                          </ul>
+                        </div>
+                        <div class="col">
+                          <h5 class="mt-3" style="text-align:right;font-weight:300 !important">Fecha: {{date('d/m/Y')}}</h5>
+                        </div>
+                        <hr>
+                        <div class="col-12 p-0">
+                          <table class="table table-sm table-responsive">
+                            <thead class="thead-default">
+                              <th>Nº</th>
+                              <th>Descripción</th>
+                              <th style="text-align:right">Importe</th>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(month,index) in payment.months.value">
+                                <td>0000@{{index}}</td>
+                                <td>Pago de condominio (Ultimo mes en deuda aqui)</td>
+                                <td style="text-align:right">Bs. 9.000,00</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <table class="table table-sm">
+                            <tr>
+                              <td colspan="4" class="table-secondary">Total</td>
+                              <td colspan="1" style="text-align:right">Bs. @{{payment.months.price * payment.months.value}},00</td>
+                            </tr>
+                          </table>
+                        </div>
+                        <hr>
+                        <div class="col-12">
+                          <ul class="list-group">
+                            <li class="list-group-item bg-light pl-0"><strong>Método de pago:</strong> <span>@{{getPaymentType()}}</span></li>
+                            <li v-if="payment.bankNumber" class="list-group-item bg-light pl-0"><strong>Número de transferencia:</strong> <span>@{{payment.bankNumber}}</span></li>
+                            <li v-if="payment.originBank" class="list-group-item bg-light pl-0"><strong>Banco emisor:</strong> <span>@{{getOriginBank()}}</span></li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </transition>
+      </div>{{-- Fin de Columna 2 --}}
+    </div> {{-- Fin de Row --}}
+  </div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document" style="max-width:1024px">
+    <div class="modal-content" style="width:1024px">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Información</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body px-0">
+        {{-- <div v-if="payments_list.length > 0">
+          Si hay Datos
+        </div>
+        <div v-else>
+          No hay Datos
+        </div> --}}
+        <ul class="list-group">
+          <li class="list-group-item" style="border-bottom: 1px solid rgba(0, 0, 0, 0.125);background: transparent;">
+            <div class="row">
+              <div class="col">
+                <span style="display: block;font-size: 10px;font-weight: 800;">Mes pagado:</span>
+                <span style="font-weight: 600;font-size: 18px;">Enero 2017</span>
+              </div>
+              <div class="col">
+                <span style="display: block;font-size: 10px;font-weight: 800;">Método de pago:</span>
+                <span style="font-weight: 600;font-size: 18px;">Depósito</span>
+              </div>
+              <div class="col">
+                <span style="display: block;font-size: 10px;font-weight: 800;">Nº:</span>
+                <span style="font-weight: 600;font-size: 18px;">618486455</span>
+              </div>
+              <div class="col">
+                <span style="display: block;font-size: 10px;font-weight: 800;">Banco emisor:</span>
+                <span style="font-weight: 600;font-size: 18px;"><img src="http://opcionis.com/blog/wp-content/uploads/2016/09/bbva-logo-e1456838226318-750x300.png" height="32px" alt=""></span>
+              </div>
+              <div class="col">
+                <span style="display: block;font-size: 10px;font-weight: 800;">Fecha de pago:</span>
+                <span style="font-weight: 600;font-size: 18px;">08/12/2016</span>
+              </div>
+              <div class="col-auto">
+                <span style="display: block;font-size: 10px;font-weight: 800;">Opciones:</span>
+                <a href="#" @click="getPaymentsData({{$apartment->id}})" data-toggle="modal" data-target="#exampleModal"><i class="material-icons">print</i></a>
+              </div>
+            </div>
+          </li>
+          <li class="list-group-item" style="border-bottom: 1px solid rgba(0, 0, 0, 0.125);background: transparent;">
+            <div class="row">
+              <div class="col">
+                <span style="display: block;font-size: 10px;font-weight: 800;">Mes pagado:</span>
+                <span style="font-weight: 600;font-size: 18px;">Febrero 2017</span>
+              </div>
+              <div class="col">
+                <span style="display: block;font-size: 10px;font-weight: 800;">Método de pago:</span>
+                <span style="font-weight: 600;font-size: 18px;">Efectivo</span>
+              </div>
+              <div class="col">
+                <span style="display: block;font-size: 10px;font-weight: 800;">Fecha de pago:</span>
+                <span style="font-weight: 600;font-size: 18px;">08/01/2016</span>
+              </div>
+              <div class="col-auto">
+                <span style="display: block;font-size: 10px;font-weight: 800;">Opciones:</span>
+                <a href="#"><i class="material-icons">print</i></a>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+@endsection
